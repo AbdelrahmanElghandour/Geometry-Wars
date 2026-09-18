@@ -1,80 +1,69 @@
-Player:
-- The player is defined by a shape which is defined in the config file
-- The player must spawn in the center of the screen at the beginning of the game, and after it dies (collides with an enemy)
-- The player moves by a speed read from the config file in these directions
-Up: W key, Left: A key, Down: S key, Right: D key
-- The player is confined to move only within the bounds of the window
-- The player will shoot a bullet toward the mouse pointer when the left mouse button is clicked. The speed, size and lifespan of the bullets are read from the config file.
+# Geometry Wars Style Shooter
 
-Special Ability:
-- You are free to come up with your own 'Special move' which is fired by the player when the right mouse button is clicked. This special ability must:
-	- Multiple entities (bullets etc) spawned by the special weapon
-	- Entities have some unique graphic associate with them
-	- A unique game mechanic is introduced via a new component
-	- A 'cooldown' times must be implemented for the special weapon
-    The properties of the special move are not in the config file
-Enemy(s):
-- Enemies will spawn in a random location on the screen every X frames, 
-where X is defined in the configuration file.
-- Enemies must not overlap the sides of the screen at the time of spawn.
-- Enemies shapes have random number of vertices, between a given minimum and maximum number, which is specified in the config file.
-- Enemy shape radius will be specified in the configuration file.
-- Enemies will be given a random color upon spawning. 
-- Enemies will be given a random speed upon spawning , between a minimum and maximum value specified in the config file.
-- When an enemy reaches the edge of the window, it should bounce off in the opposite direction at the same speed.
-- When (large) enemies collide with a bullet or player, they are destroyed, and N small enemies spawn in its place, where N is the number of vertices of the original enemy. Each small enemy must have the same number of vertices and color of the original enemy. These small entities travel outward at angles at a fixed intervals equal to (360 / vertices). 
-For example, if the original enemy had 6 sides, the 6 smaller enemies will travel outward in intervals of (360 / 6) = 60 degrees. The smaller enemies must have a radius equal to half of the original entity.
+This project is a small C++ game built with SFML that follows the structure of a classic arcade shooter inspired by Geometry Wars. The player controls a polygonal ship, moves around the screen, fires at incoming enemies, and tries to survive as long as possible while building up a score.
 
-Score: 
-- Each time an enemy spawns, it is given a score component of N*100, where N is the number of vertices it has. Small enemies get double this value.
-- If a player bullet kills an enemy, the game score is increased by the score component of the enemy killed.
-- The score should be displayed with the font specified by the config file in the top-left corner in the screen
+## Project Overview
 
-Drawing:
-- In the render system, all entities should be given a slow rotation, which makes the game look a little nicer.(not specified in the file)
-- Any special effects which do not alter game play can be added for up to 5% bonus marks on the assignment.
-- Any entity with a lifespan is currently alive, it should have its Color alpha channel set to a ratio depending on how long it has left to live. For example, if any Entity has a 100 frame life span, and it has been alive for 50 frames, its alpha value should be set to 0.5 * 255. The alpha should go from 255 when it is first spawned, to 0 on the last frame it is alive.
+The game reads its settings from `config.txt`, creates the main game window, spawns the player and enemy entities, and updates the simulation each frame. It uses an entity-component style structure with separate managers for entities, shapes, transforms, collision, scoring, and lifespan effects.
 
-Misc:
-- The 'P' key should pause the game.
-- The 'Esc' should close the game.
+## Current Gameplay
 
-Configuration File:
+### Player controls
+- Move: `W`, `A`, `S`, `D`
+- Aim: mouse pointer
+- Shoot: left mouse button
+- Pause: `P`
+- Exit: `Esc`
 
-Window W H FL FS
-- W: width, H: height, FL: Frame Limit, FS: integer that specifies whether to display the application in full-screen mode (1) or not (0)
+The player spawns in the center of the screen and is kept inside the window bounds. Bullets travel toward the mouse cursor and are removed after their configured lifespan expires.
 
-Font F S R G B
-- same as assignment 1
+### Enemies
+- Enemies spawn at random positions on the screen.
+- They move with random velocity and bounce off the screen edges.
+- They rotate slowly while active.
+- When large enemies are destroyed, they split into smaller enemies that fly outward in a fan pattern.
 
-Player Specification:
-Player SR CR S FR FG FB OR OG OB OT V
-shape Radius 	  SR 	   int
-Collision Radius  CR 	   int
-Speed		  S	   float
-Fill Color 	  FR,FG,FB  int, int, int
-Outline Color 	  OR,OG,OB  int, int, int
-Outline Thickness OT	    int
-Shape Vertices    V	    int
+### Score system
+- Each enemy has a score based on its number of vertices.
+- Destroying enemies increases the score shown in the upper-left corner of the screen.
+- The game score is updated via the text renderer using the configured font.
 
-Enemy Specification:
-Enemy SR CR SMIN SMAX OR OG OB OT VMIN VMAX L SI
-Minimum Speed 		SMIN
-Maximum Speed 		SMAX
-Min no. of vertices 	VMIN
-Max no. of vertices 	VMAX
-Life span of small enemies L
-Spawn Interval 		SP
+### Special weapon
+A special weapon hook exists in the code (`spawnSpecialWeapon`), but the current implementation is scaffolded rather than fully completed. The assignment specification mentions a right-click special move with cooldown and multiple spawned projectiles, but that feature is not fully implemented in the present version.
 
-Bullet Specification:
-Bullet SR CR S FR FG FB OR OG OB OT V L
-Shape Radius 	  SR		int
-Collision Radius  CR		int
-Speed		  S		int
-Fill Color	  FR, FG, FB    float
-Outline Color 	  OR, OG, OB    int, int, int 
-Outline Thickness OT		int
-Shape Vertices    V		int
-Lifespan          L		int
+## Configuration
 
+The game setup is controlled by the file `config.txt`:
+- window size and frame limit
+- font path and color
+- player settings
+- enemy settings
+- bullet settings
 
+The code also expects the font file `fonts/arial.ttf` to be available in the project.
+
+## Project Structure
+
+- `main.cpp` – entry point for the game
+- `Game.h` / `Game.cpp` – primary game loop, systems, spawning logic, collision handling, and rendering
+- `Entity.h` / `Entity.cpp` – entity representation and lifecycle
+- `EntityManager.h` / `EntityManager.cpp` – entity creation and cleanup
+- `Component.h` – component definitions for transform, shape, input, scoring, and lifespan
+- `vec2.h` / `vec2.cpp` – vector math utility used by the game
+- `config.txt` – runtime configuration values
+- `fonts/arial.ttf` – font used for the score display
+
+## Build and Run
+
+This project is a Visual Studio C++ solution (`Assignment2.sln`). To run it:
+
+1. Open `Assignment2.sln` in Visual Studio.
+2. Ensure the SFML dependencies are correctly configured for your environment.
+3. Build the solution.
+4. Run the project.
+
+If the environment is set up correctly, the game window should open and begin running immediately.
+
+## Notes
+
+This project is a coursework assignment and includes a mix of completed and partially completed systems. The main gameplay loop, rendering, player controls, and enemy spawning are implemented, while some advanced mechanics such as the special weapon remain a future improvement.
